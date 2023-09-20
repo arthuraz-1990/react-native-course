@@ -1,40 +1,64 @@
 // import { StatusBar } from 'expo-status-bar';
 import { useState } from 'react';
-import { Button, ScrollView, StyleSheet, Text, TextInput, View } from 'react-native';
+import { Button, FlatList, StyleSheet, Text, View } from 'react-native';
+import GoalInput from './components/GoalInput';
+import GoalItem from './components/GoalItem';
+import { StatusBar } from 'expo-status-bar';
 
 export default function App() {
   const [ list, setList ] = useState([]);
-  const [ value, setValue ] = useState('');
+  const [ showInput, setShowInput ] = useState(false);
 
-  const onClickBtn = () => {
-    setList(newList => [...newList, value]);
-    setValue('');
+  const onAddGoalHandler = (goalText) => {
+    setList(newList => [...newList, {text: goalText, id: Math.random().toString()}]);
   }
 
-  const onChangeInput = (value) => {
-    setValue(value);
+  const onDeleteGoalHandler = (id) => {
+    setList(newList => newList.filter(item => item.id !== id));
+  }
+
+  const onShowInput = () => {
+    setShowInput(true);
+  }
+
+  const onHideInput = () => {
+    setShowInput(false);
   }
   
   return (
-    <View style={styles.appContainer} >
-      {/* input */}
-      <View style={styles.inputContainer}>
-        <TextInput style={styles.inputField}  value={value} onChangeText={onChangeInput}
-          placeholder='Adicione Nova Tarefa'/>
-        <Button disabled={!value} title='Adicionar' onPress={onClickBtn} />
+    <>
+      <StatusBar style='light'></StatusBar>
+      <View style={styles.appContainer} >
+        {/* input */}
+        {/* <View style={styles.inputContainer}>
+          <TextInput style={styles.inputField}  value={value} onChangeText={onChangeInput}
+            placeholder='Adicione Nova Tarefa'/>
+          <Button disabled={!value} title='Adicionar' onPress={onClickBtn} />
+        </View> */}
+        <Button title='Adicionar Tarefas' color={'#5e0acc'} onPress={onShowInput} />
+        <GoalInput visible={showInput} onCancel={onHideInput} onAddGoalHandler={onAddGoalHandler}></GoalInput>
+        {/* list */}
+        <View style={styles.listContainer} >
+          <Text style={styles.listTitle}>Lista de Tarefas</Text>
+          {/* <ScrollView style={styles.scrollList}> */}
+          <FlatList data={list} alwaysBounceVertical={false} 
+            keyExtractor={(item, index) => item.id}
+            ListEmptyComponent={<Text style={styles.emptyText}>Lista vazia. Adicione novos itens.</Text>}
+            renderItem={
+              itemData => 
+              <GoalItem id={itemData.item.id} text={itemData.item.text} 
+              onDeleteItem={onDeleteGoalHandler}></GoalItem>
+            }
+            />
+            {/* {list.map(item => */
+              // <View style={styles.listItem} key={item}> 
+              //   <Text style={styles.listItemText}>{item}</Text>
+              // </View>
+            /* )} */}
+          {/* </ScrollView> */}
+        </View>
       </View>
-      {/* list */}
-      <View style={styles.listContainer} >
-        <Text style={styles.listTitle}>Lista de Tarefas</Text>
-        <ScrollView style={styles.scrollList}>
-          {list.map(item =>
-            <View style={styles.listItem} key={item}> 
-              <Text style={styles.listItemText}>{item}</Text>
-            </View>
-          )}
-        </ScrollView>
-      </View>
-    </View>
+    </>
   );
 }
 
@@ -44,44 +68,16 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     flex: 1
   },
-  inputContainer: {
-    flexDirection: 'row',
-    marginBottom: 4,
-    columnGap: 10,
-    alignItems: 'center',
-    marginBottom: 24,
-    borderBottomColor: '#cccccc',
-    borderBottomWidth: 1,
-    flex: 1
-  },  
-  inputField: {
-    borderColor: '#cccccc',
-    borderWidth: 1,
-    borderRadius: 5,
-    flex: 1,
-    padding: 5
-  },
   listContainer: {
     flex: 5,
-    flexDirection: 'column'
+    flexDirection: 'column',
+    marginTop: 8
   },
   listTitle: {
     fontSize: 20,
-    fontWeight: 'bold'
-  },
-  scrollList: {
-    flex: 1
-  },
-  listItem: {
-    margin: 8,
-    padding: 8,
-    backgroundColor: '#5e0acc',
-    color: 'white',
-    borderRadius: 6,
-    borderWidth: 1,
-    textTransform: 'capitalize'
-  },
-  listItemText: {
+    fontWeight: 'bold', color: 'white'
+  }, 
+  emptyText: {
     color: 'white'
   }
 });
